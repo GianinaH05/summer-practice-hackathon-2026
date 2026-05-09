@@ -24,7 +24,6 @@ type Event = {
 export default function PEvents() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [userId, setUserId] = useState<string | null>(null);
 
     const navigate = useNavigate();
@@ -33,7 +32,6 @@ export default function PEvents() {
     useEffect(() => {
         const loadUser = async () => {
             const { data } = await supabase.auth.getSession();
-
             setUserId(data.session?.user.id ?? null);
         };
 
@@ -59,14 +57,10 @@ export default function PEvents() {
                     end_time,
                     max_players,
                     captain_id,
-                    sports (
-                        name
-                    )
+                    sports (name)
                 `)
                 .eq("captain_id", userId)
-                .order("event_date", {
-                    ascending: true,
-                });
+                .order("event_date", { ascending: true });
 
             if (error) {
                 console.error(error.message);
@@ -81,7 +75,31 @@ export default function PEvents() {
         fetchMyEvents();
     }, [userId]);
 
-    // GET SPORT NAME
+    // DELETE EVENT
+    const deleteEvent = async (eventId: string) => {
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete this event?"
+        );
+
+        if (!confirmDelete) return;
+
+        const { error } = await supabase
+            .from("events")
+            .delete()
+            .eq("id", eventId);
+
+        if (error) {
+            console.error(error.message);
+            return;
+        }
+
+        // remove from UI instantly
+        setEvents((prev) =>
+            prev.filter((e) => e.id !== eventId)
+        );
+    };
+
+    // SPORT NAME
     const getSportName = (event: Event) => {
         const sport = event.sports;
 
@@ -143,13 +161,6 @@ export default function PEvents() {
                 </p>
             )}
 
-            {/* EMPTY */}
-            {!loading && events.length === 0 && (
-                <p className="empty-text">
-                    You haven't created any events yet.
-                </p>
-            )}
-
             {/* EVENTS */}
             <div className="events-grid">
 
@@ -159,27 +170,22 @@ export default function PEvents() {
                         className="event-card"
                     >
 
-                        {/* SPORT */}
                         <div className="event-sport">
                             {getSportName(event)}
                         </div>
 
-                        {/* TITLE */}
                         <h2 className="event-title">
                             {event.title}
                         </h2>
 
-                        {/* DESCRIPTION */}
                         <p className="event-desc">
                             {event.description}
                         </p>
 
-                        {/* LOCATION */}
                         <div className="event-meta">
                             📍 {event.location_name}
                         </div>
 
-                        {/* DATE */}
                         <div className="event-meta">
                             📅{" "}
                             {new Date(
@@ -187,19 +193,23 @@ export default function PEvents() {
                             ).toLocaleDateString()}
                         </div>
 
-                        {/* TIME */}
                         <div className="event-meta">
-                            🕒 {event.start_time} →{" "}
-                            {event.end_time}
+                            🕒 {event.start_time} → {event.end_time}
                         </div>
 
-                        {/* PLAYERS */}
                         <div className="event-meta">
-                            👥 Max Players:{" "}
-                            {event.max_players}
+                            👥 Max Players: {event.max_players}
                         </div>
 
-                        {/* OWNER */}
+                        {/* DELETE BUTTON */}
+                        <button
+                            className="delete-button"
+                            onClick={() => deleteEvent(event.id)}
+                        >
+                            🗑 Delete Event
+                        </button>
+
+                        {/* OWNER LABEL */}
                         <button
                             className="joined-button"
                             disabled

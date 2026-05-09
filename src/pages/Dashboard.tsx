@@ -179,7 +179,34 @@ export default function Dashboard() {
 
                 </div>
             </div>
+            {/* AVAILABLE PEOPLE */}
+            <div className="availability-section">
 
+                <h2 className="section-title">
+                    Available People
+                </h2>
+
+                <div className="availability-list">
+
+                    {profiles.map((p) => (
+                        <div key={p.id} className="availability-item">
+
+                            <span
+                                className={`status-dot ${
+                                    p.available ? "online" : "offline"
+                                }`}
+                            />
+
+                            <span>{p.username}</span>
+
+                        </div>
+                    ))}
+
+                </div>
+            </div>
+            <h2 className="section-title">
+                Events
+            </h2>
             {/* EVENTS */}
             {loading ? (
                 <p className="loading-text">Loading...</p>
@@ -239,32 +266,6 @@ export default function Dashboard() {
 
                 </div>
             )}
-
-            {/* AVAILABLE PEOPLE */}
-            <div className="availability-section">
-
-                <h2 className="section-title">
-                    Available People
-                </h2>
-
-                <div className="availability-list">
-
-                    {profiles.map((p) => (
-                        <div key={p.id} className="availability-item">
-
-                            <span
-                                className={`status-dot ${
-                                    p.available ? "online" : "offline"
-                                }`}
-                            />
-
-                            <span>{p.username}</span>
-
-                        </div>
-                    ))}
-
-                </div>
-            </div>
 
         </div>
     );

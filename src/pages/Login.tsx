@@ -39,7 +39,7 @@ export default function Login() {
         <div className="login-container">
             <div className="login-card">
 
-                <h1 className="login-title">🔐 Login</h1>
+                <h1 className="login-title">Login</h1>
 
                 <input
                     className="login-input"

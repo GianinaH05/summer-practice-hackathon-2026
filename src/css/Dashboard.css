@@ -5,31 +5,47 @@
     background: linear-gradient(135deg, #e6f4ff, #f5fbff, #eaf7ff);
 }
 
+/* HEADER TITLE */
 .dashboard-title {
     font-size: 26px;
     font-weight: 600;
-    margin-bottom: 20px;
+    margin-bottom: 6px;
 
     color: #0a3d66;
     text-shadow: 0 0 10px rgba(0, 120, 255, 0.15);
 }
 
-/* Events grid */
+.dashboard-subtitle {
+    margin: 0;
+    color: #4a6b85;
+    opacity: 0.8;
+}
+
+/* SECTION TITLES */
+.section-title {
+    margin: 30px 0 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0a3d66;
+}
+
+/* EVENTS GRID */
 .events-grid {
     display: grid;
     gap: 12px;
 }
 
-/* Event card */
+/* EVENT CARD */
 .event-card {
     padding: 14px;
     border-radius: 14px;
 
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 
     border: 1px solid rgba(255, 255, 255, 0.4);
+
     box-shadow: 0 6px 20px rgba(0, 120, 255, 0.1);
 
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -48,38 +64,45 @@
 
 .event-desc {
     margin-top: 6px;
-    color: #2b5d7a;
     font-size: 14px;
+    color: #2b5d7a;
 }
 
-/* States */
+/* META INFO */
+.event-meta {
+    font-size: 13px;
+    color: #3c6a86;
+    margin-top: 4px;
+}
+
+.event-sport {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0aa2ff;
+    margin-bottom: 6px;
+}
+
+/* LOADING / EMPTY */
 .loading-text,
 .empty-text {
     color: #4a6b85;
     opacity: 0.8;
-}
-/* Top bar layout */
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    margin-bottom: 20px;
+    text-align: center;
 }
 
-/* Buttons container */
+/* TOP BUTTONS */
 .top-actions {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
-/* Base button */
 .nav-button {
     padding: 8px 14px;
     border-radius: 10px;
 
     border: 1px solid rgba(0, 120, 255, 0.2);
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.7);
 
     color: #0a3d66;
     font-weight: 500;
@@ -93,16 +116,12 @@
     box-shadow: 0 6px 15px rgba(0, 120, 255, 0.15);
 }
 
-/* Primary button (Create Event) */
 .nav-button.primary {
     background: #0a3d66;
     color: white;
     border: none;
 }
 
-.nav-button.primary:hover {
-    background: #07508a;
-}
 /* JOIN BUTTON */
 .join-button {
     margin-top: 12px;
@@ -122,7 +141,7 @@
 
     box-shadow: 0 6px 16px rgba(0, 120, 255, 0.25);
 
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .join-button:hover {
@@ -130,23 +149,7 @@
     box-shadow: 0 10px 25px rgba(0, 120, 255, 0.35);
 }
 
-.join-button:active {
-    transform: translateY(0px);
-    opacity: 0.9;
-}
-
-/* DISABLED (when already joined) */
-.join-button:disabled {
-    background: rgba(0, 180, 90, 0.25);
-    color: #d1ffe3;
-
-    box-shadow: none;
-    cursor: not-allowed;
-
-    transform: none;
-}
-
-/* OPTIONAL: "Joined" button look */
+/* JOINED */
 .joined-button {
     margin-top: 12px;
     padding: 10px 14px;
@@ -159,18 +162,55 @@
 
     color: #0b5d2a;
     background: rgba(0, 255, 120, 0.15);
-
-    box-shadow: 0 4px 12px rgba(0, 255, 120, 0.15);
 }
+
+/* DELETE BUTTON */
+.delete-button {
+    margin-top: 10px;
+    padding: 8px 10px;
+
+    width: 100%;
+
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-weight: 600;
+    color: white;
+
+    background: rgba(239, 68, 68, 0.85);
+
+    transition: 0.15s ease;
+}
+
+.delete-button:hover {
+    background: rgba(220, 38, 38, 0.95);
+}
+
+/* =========================
+   AVAILABILITY SECTION (CENTERED)
+========================= */
+
 .availability-section {
     margin-top: 40px;
+
     width: 100%;
     max-width: 900px;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .availability-list {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
+
     gap: 10px;
 }
 
@@ -182,11 +222,12 @@
     padding: 10px 14px;
     border-radius: 12px;
 
-    background: rgba(255,255,255,0.7);
+    background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-/* DOT */
+/* STATUS DOTS */
 .status-dot {
     width: 10px;
     height: 10px;
@@ -194,11 +235,11 @@
 }
 
 .status-dot.online {
-    background: #22c55e; /* green */
+    background: #22c55e;
     box-shadow: 0 0 8px #22c55e;
 }
 
 .status-dot.offline {
-    background: #ef4444; /* red */
+    background: #ef4444;
     box-shadow: 0 0 8px #ef4444;
 }
