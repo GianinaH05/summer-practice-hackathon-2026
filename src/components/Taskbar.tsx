@@ -4,26 +4,59 @@ import { useNavigate } from "react-router-dom";
 
 export default function Taskbar() {
     const [user, setUser] = useState<any>(null);
+    const [available, setAvailable] = useState<boolean>(false);
+
     const navigate = useNavigate();
 
+    // LOAD USER + PROFILE
     useEffect(() => {
         const loadUser = async () => {
             const { data } = await supabase.auth.getSession();
-            setUser(data.session?.user ?? null);
+            const u = data.session?.user ?? null;
+
+            setUser(u);
+
+            if (!u) return;
+
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("available")
+                .eq("id", u.id)
+                .single();
+
+            setAvailable(profile?.available ?? true);
         };
 
         loadUser();
 
-        const { data: listener } = supabase.auth.onAuthStateChange(
-            (_event, session) => {
+        const { data: listener } =
+            supabase.auth.onAuthStateChange((_event, session) => {
                 setUser(session?.user ?? null);
-            }
-        );
+            });
 
         return () => {
             listener.subscription.unsubscribe();
         };
     }, []);
+
+    // TOGGLE AVAILABLE
+    const toggleAvailable = async () => {
+        if (!user) return;
+
+        const newValue = !available;
+
+        const { error } = await supabase
+            .from("profiles")
+            .update({ available: newValue })
+            .eq("id", user.id);
+
+        if (!error) {
+            setAvailable(newValue);
+
+            // 🔥 refresh whole app
+            window.location.reload();
+        }
+    };
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -37,23 +70,37 @@ export default function Taskbar() {
 
             <div style={styles.right}>
 
-                {/* DASHBOARD BUTTON (ONLY IF LOGGED IN) */}
+                {/* AVAILABLE BUTTON */}
+                {user && (
+                    <button
+                        onClick={toggleAvailable}
+                        style={{
+                            ...styles.button,
+                            background: available
+                                ? "rgba(34,197,94,0.4)"
+                                : "rgba(239,68,68,0.4)",
+                        }}
+                        title="Toggle availability"
+                    >
+                        {available ? "🟢 Available" : "🔴 Not Available"}
+                    </button>
+                )}
+
+                {/* DASHBOARD */}
                 {user && (
                     <button
                         style={styles.button}
                         onClick={() => navigate("/dashboard")}
-                        title="Dashboard"
                     >
                         🏠 Dashboard
                     </button>
                 )}
 
-                {/* PROFILE BUTTON */}
+                {/* PROFILE */}
                 {user && (
                     <button
                         style={styles.iconButton}
                         onClick={() => navigate("/profile")}
-                        title="Profile"
                     >
                         👤
                     </button>
@@ -79,7 +126,6 @@ export default function Taskbar() {
         </header>
     );
 }
-
 const styles: Record<string, React.CSSProperties> = {
     header: {
         height: "64px",

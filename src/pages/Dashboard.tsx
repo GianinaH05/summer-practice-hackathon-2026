@@ -20,27 +20,32 @@ type Event = {
     sports?: Sport | Sport[] | null;
 };
 
+type Profile = {
+    id: string;
+    username: string;
+    available: boolean;
+};
+
 export default function Dashboard() {
     const [events, setEvents] = useState<Event[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const [userId, setUserId] = useState<string | null>(null);
+    const [profiles, setProfiles] = useState<Profile[]>([]);
     const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
 
-    // LOAD USER
+    // USER
     useEffect(() => {
         const loadUser = async () => {
             const { data } = await supabase.auth.getSession();
-
             setUserId(data.session?.user.id ?? null);
         };
 
         loadUser();
     }, []);
 
-    // LOAD EVENTS
+    // EVENTS
     useEffect(() => {
         const fetchEvents = async () => {
             setLoading(true);
@@ -56,20 +61,12 @@ export default function Dashboard() {
                     start_time,
                     end_time,
                     max_players,
-                    sports (
-                        name
-                    )
+                    sports (name)
                 `)
-                .order("event_date", {
-                    ascending: true,
-                });
+                .order("event_date", { ascending: true });
 
-            if (error) {
-                console.error(error.message);
-                setEvents([]);
-            } else {
-                setEvents((data as Event[]) || []);
-            }
+            if (!error) setEvents((data as Event[]) || []);
+            else setEvents([]);
 
             setLoading(false);
         };
@@ -77,7 +74,32 @@ export default function Dashboard() {
         fetchEvents();
     }, []);
 
-    // LOAD JOINED EVENTS
+    // PROFILES (availability list)
+    useEffect(() => {
+        const fetchProfiles = async () => {
+            const { data } = await supabase
+                .from("profiles")
+                .select("id, username, available");
+
+            setProfiles(data || []);
+        };
+
+        // initial load
+        fetchProfiles();
+
+        // listen for Taskbar updates
+        const handler = () => {
+            fetchProfiles();
+        };
+
+        window.addEventListener("profiles-update", handler);
+
+        return () => {
+            window.removeEventListener("profiles-update", handler);
+        };
+    }, []);
+
+    // JOINED EVENTS
     useEffect(() => {
         const fetchJoined = async () => {
             if (!userId) return;
@@ -87,38 +109,27 @@ export default function Dashboard() {
                 .select("event_id")
                 .eq("user_id", userId);
 
-            setJoinedEvents(
-                data?.map((d: any) => d.event_id) || []
-            );
+            setJoinedEvents(data?.map((d: any) => d.event_id) || []);
         };
 
         fetchJoined();
     }, [userId]);
 
-    // GET SPORT NAME
     const getSportName = (event: Event) => {
-        const sport = event.sports;
+        const s: any = event.sports;
 
-        if (!sport) return "Unknown Sport";
-
-        if (Array.isArray(sport)) {
-            return sport[0]?.name || "Unknown Sport";
-        }
-
-        return sport.name || "Unknown Sport";
+        if (!s) return "Unknown Sport";
+        if (Array.isArray(s)) return s[0]?.name || "Unknown Sport";
+        return s.name || "Unknown Sport";
     };
 
-    // JOIN EVENT
     const joinEvent = async (eventId: string) => {
         if (!userId) {
             navigate("/login");
             return;
         }
 
-        const alreadyJoined =
-            joinedEvents.includes(eventId);
-
-        if (alreadyJoined) return;
+        if (joinedEvents.includes(eventId)) return;
 
         const { error } = await supabase
             .from("event_participants")
@@ -128,15 +139,9 @@ export default function Dashboard() {
                 joined_at: new Date().toISOString(),
             });
 
-        if (error) {
-            console.error(error.message);
-            return;
+        if (!error) {
+            setJoinedEvents((prev) => [...prev, eventId]);
         }
-
-        setJoinedEvents((prev) => [
-            ...prev,
-            eventId,
-        ]);
     };
 
     return (
@@ -149,137 +154,118 @@ export default function Dashboard() {
                     <h1 className="dashboard-title">
                         Sports Hub
                     </h1>
-
                     <p className="dashboard-subtitle">
-                        Join games and meet players
+                        Join events and find players
                     </p>
                 </div>
 
-                {/* NAVIGATION */}
                 <div className="top-actions">
 
-                    <button
-                        className="nav-button"
-                        onClick={() => navigate("/chat")}
-                    >
+                    <button onClick={() => navigate("/chat")} className="nav-button">
                         💬 Chat
                     </button>
 
-                    <button
-                        className="nav-button primary"
-                        onClick={() => navigate("/event")}
-                    >
+                    <button onClick={() => navigate("/event")} className="nav-button primary">
                         ➕ Create Event
                     </button>
 
-                    <button
-                        className="nav-button"
-                        onClick={() => navigate("/pevents")}
-                    >
+                    <button onClick={() => navigate("/pevents")} className="nav-button">
                         🏆 My Events
                     </button>
 
-                    <button
-                        className="nav-button"
-                        onClick={() => navigate("/profile")}
-                    >
+                    <button onClick={() => navigate("/profile")} className="nav-button">
                         👤 Profile
                     </button>
 
                 </div>
             </div>
 
-            {/* LOADING */}
-            {loading && (
-                <p className="loading-text">
-                    Loading events...
-                </p>
-            )}
-
-            {/* EMPTY */}
-            {!loading && events.length === 0 && (
-                <p className="empty-text">
-                    No events found
-                </p>
-            )}
-
             {/* EVENTS */}
-            <div className="events-grid">
+            {loading ? (
+                <p className="loading-text">Loading...</p>
+            ) : (
+                <div className="events-grid">
 
-                {events.map((event) => {
-                    const isJoined =
-                        joinedEvents.includes(event.id);
+                    {events.map((event) => {
+                        const isJoined = joinedEvents.includes(event.id);
 
-                    return (
-                        <div
-                            key={event.id}
-                            className="event-card"
-                        >
+                        return (
+                            <div key={event.id} className="event-card">
 
-                            {/* SPORT */}
-                            <div className="event-sport">
-                                {getSportName(event)}
+                                <div className="event-sport">
+                                    {getSportName(event)}
+                                </div>
+
+                                <h2 className="event-title">
+                                    {event.title}
+                                </h2>
+
+                                <p className="event-desc">
+                                    {event.description}
+                                </p>
+
+                                <div className="event-meta">
+                                    📍 {event.location_name}
+                                </div>
+
+                                <div className="event-meta">
+                                    📅{" "}
+                                    {new Date(event.event_date).toLocaleDateString()}
+                                </div>
+
+                                <div className="event-meta">
+                                    🕒 {event.start_time} → {event.end_time}
+                                </div>
+
+                                <div className="event-meta">
+                                    👥 Max {event.max_players}
+                                </div>
+
+                                {isJoined ? (
+                                    <button className="joined-button" disabled>
+                                        ✅ Joined
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="join-button"
+                                        onClick={() => joinEvent(event.id)}
+                                    >
+                                        Join Event
+                                    </button>
+                                )}
                             </div>
+                        );
+                    })}
 
-                            {/* TITLE */}
-                            <h2 className="event-title">
-                                {event.title}
-                            </h2>
+                </div>
+            )}
 
-                            {/* DESCRIPTION */}
-                            <p className="event-desc">
-                                {event.description}
-                            </p>
+            {/* AVAILABLE PEOPLE */}
+            <div className="availability-section">
 
-                            {/* LOCATION */}
-                            <div className="event-meta">
-                                📍 {event.location_name}
-                            </div>
+                <h2 className="section-title">
+                    Available People
+                </h2>
 
-                            {/* DATE */}
-                            <div className="event-meta">
-                                📅{" "}
-                                {new Date(
-                                    event.event_date
-                                ).toLocaleDateString()}
-                            </div>
+                <div className="availability-list">
 
-                            {/* TIME */}
-                            <div className="event-meta">
-                                🕒 {event.start_time} →{" "}
-                                {event.end_time}
-                            </div>
+                    {profiles.map((p) => (
+                        <div key={p.id} className="availability-item">
 
-                            {/* PLAYERS */}
-                            <div className="event-meta">
-                                👥 Max Players:{" "}
-                                {event.max_players}
-                            </div>
+                            <span
+                                className={`status-dot ${
+                                    p.available ? "online" : "offline"
+                                }`}
+                            />
 
-                            {/* BUTTON */}
-                            {isJoined ? (
-                                <button
-                                    className="joined-button"
-                                    disabled
-                                >
-                                    ✅ Joined
-                                </button>
-                            ) : (
-                                <button
-                                    className="join-button"
-                                    onClick={() =>
-                                        joinEvent(event.id)
-                                    }
-                                >
-                                    Join Event
-                                </button>
-                            )}
+                            <span>{p.username}</span>
 
                         </div>
-                    );
-                })}
+                    ))}
 
+                </div>
             </div>
+
         </div>
     );
 }

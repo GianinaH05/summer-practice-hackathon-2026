@@ -24,16 +24,21 @@ export default function Login() {
 
         if (error) {
             setMessage(error.message);
-        } else {
-            navigate("/dashboard");
+            setLoading(false);
+            return;
         }
 
+        // 🔥 FORCE TASKBAR REFRESH (IMPORTANT)
+        window.dispatchEvent(new Event("availability-change"));
+
+        navigate("/dashboard");
         setLoading(false);
     };
 
     return (
         <div className="login-container">
             <div className="login-card">
+
                 <h1 className="login-title">🔐 Login</h1>
 
                 <input
@@ -66,7 +71,10 @@ export default function Login() {
                     Don't have an account? Register
                 </p>
 
-                {message && <p className="login-message">{message}</p>}
+                {message && (
+                    <p className="login-message">{message}</p>
+                )}
+
             </div>
         </div>
     );

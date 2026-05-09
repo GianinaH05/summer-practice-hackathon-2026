@@ -162,3 +162,43 @@
 
     box-shadow: 0 4px 12px rgba(0, 255, 120, 0.15);
 }
+.availability-section {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 900px;
+}
+
+.availability-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.availability-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 10px 14px;
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+}
+
+/* DOT */
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.status-dot.online {
+    background: #22c55e; /* green */
+    box-shadow: 0 0 8px #22c55e;
+}
+
+.status-dot.offline {
+    background: #ef4444; /* red */
+    box-shadow: 0 0 8px #ef4444;
+}
