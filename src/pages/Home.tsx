@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import "../css/Home.css";
+import { useNavigate } from "react-router-dom";
 
 type Sport = {
     name: string;
@@ -20,7 +21,7 @@ type Event = {
 export default function Home() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchEvents = async () => {
             setLoading(true);
@@ -105,8 +106,10 @@ export default function Home() {
                             →{" "}
                             {new Date(event.end_time).toLocaleString()}
                         </p>
-
-                        <button className="aero-button">
+                        <button
+                            className="aero-button"
+                            onClick={() => navigate("/login")}
+                        >
                             Login to join
                         </button>
                     </div>
