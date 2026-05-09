@@ -7,7 +7,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
 import Event from "./pages/Event";
-
+import Pevents from "./pages/Pevents";
 export default function App() {
   return (
       <Layout>
@@ -19,6 +19,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/event" element={<Event />} />
+          <Route path="/pevents" element={<Pevents />} />
       </Routes>
       </Layout>
   );

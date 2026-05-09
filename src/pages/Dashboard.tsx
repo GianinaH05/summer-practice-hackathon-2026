@@ -3,64 +3,81 @@ import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import "../css/Dashboard.css";
 
+type Sport = {
+    name: string;
+};
+
 type Event = {
     id: string;
     title: string;
     description: string;
     location_name: string;
+    event_date: string;
     start_time: string;
     end_time: string;
     max_players: number;
 
-    sports?: {
-        name: string;
-    } | {
-        name: string;
-    }[] | null;
+    sports?: Sport | Sport[] | null;
 };
 
 export default function Dashboard() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+
     const [userId, setUserId] = useState<string | null>(null);
     const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
 
     const navigate = useNavigate();
 
+    // LOAD USER
     useEffect(() => {
         const loadUser = async () => {
             const { data } = await supabase.auth.getSession();
+
             setUserId(data.session?.user.id ?? null);
         };
 
         loadUser();
     }, []);
 
+    // LOAD EVENTS
     useEffect(() => {
         const fetchEvents = async () => {
             setLoading(true);
 
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from("events")
                 .select(`
                     id,
                     title,
                     description,
                     location_name,
+                    event_date,
                     start_time,
                     end_time,
                     max_players,
-                    sports (name)
+                    sports (
+                        name
+                    )
                 `)
-                .order("start_time", { ascending: true });
+                .order("event_date", {
+                    ascending: true,
+                });
 
-            setEvents(data || []);
+            if (error) {
+                console.error(error.message);
+                setEvents([]);
+            } else {
+                setEvents((data as Event[]) || []);
+            }
+
             setLoading(false);
         };
 
         fetchEvents();
     }, []);
 
+    // LOAD JOINED EVENTS
     useEffect(() => {
         const fetchJoined = async () => {
             if (!userId) return;
@@ -70,25 +87,38 @@ export default function Dashboard() {
                 .select("event_id")
                 .eq("user_id", userId);
 
-            setJoinedEvents(data?.map((d) => d.event_id) || []);
+            setJoinedEvents(
+                data?.map((d: any) => d.event_id) || []
+            );
         };
 
         fetchJoined();
     }, [userId]);
 
+    // GET SPORT NAME
     const getSportName = (event: Event) => {
-        const s: any = event.sports;
+        const sport = event.sports;
 
-        if (!s) return "Unknown sport";
-        if (Array.isArray(s)) return s[0]?.name ?? "Unknown sport";
-        return s.name ?? "Unknown sport";
+        if (!sport) return "Unknown Sport";
+
+        if (Array.isArray(sport)) {
+            return sport[0]?.name || "Unknown Sport";
+        }
+
+        return sport.name || "Unknown Sport";
     };
 
+    // JOIN EVENT
     const joinEvent = async (eventId: string) => {
         if (!userId) {
             navigate("/login");
             return;
         }
+
+        const alreadyJoined =
+            joinedEvents.includes(eventId);
+
+        if (alreadyJoined) return;
 
         const { error } = await supabase
             .from("event_participants")
@@ -98,20 +128,36 @@ export default function Dashboard() {
                 joined_at: new Date().toISOString(),
             });
 
-        if (!error) {
-            setJoinedEvents((prev) => [...prev, eventId]);
+        if (error) {
+            console.error(error.message);
+            return;
         }
+
+        setJoinedEvents((prev) => [
+            ...prev,
+            eventId,
+        ]);
     };
 
     return (
         <div className="dashboard-container">
 
-            {/* HEADER WITH BUTTONS */}
+            {/* HEADER */}
             <div className="dashboard-header">
 
-                <h1 className="dashboard-title">Sports Hub</h1>
+                <div>
+                    <h1 className="dashboard-title">
+                        Sports Hub
+                    </h1>
 
+                    <p className="dashboard-subtitle">
+                        Join games and meet players
+                    </p>
+                </div>
+
+                {/* NAVIGATION */}
                 <div className="top-actions">
+
                     <button
                         className="nav-button"
                         onClick={() => navigate("/chat")}
@@ -128,48 +174,89 @@ export default function Dashboard() {
 
                     <button
                         className="nav-button"
+                        onClick={() => navigate("/pevents")}
+                    >
+                        🏆 My Events
+                    </button>
+
+                    <button
+                        className="nav-button"
                         onClick={() => navigate("/profile")}
                     >
                         👤 Profile
                     </button>
+
                 </div>
             </div>
 
-            {/* CONTENT */}
-            {loading && <p>Loading...</p>}
+            {/* LOADING */}
+            {loading && (
+                <p className="loading-text">
+                    Loading events...
+                </p>
+            )}
 
+            {/* EMPTY */}
+            {!loading && events.length === 0 && (
+                <p className="empty-text">
+                    No events found
+                </p>
+            )}
+
+            {/* EVENTS */}
             <div className="events-grid">
+
                 {events.map((event) => {
-                    const isJoined = joinedEvents.includes(event.id);
+                    const isJoined =
+                        joinedEvents.includes(event.id);
 
                     return (
-                        <div key={event.id} className="event-card">
+                        <div
+                            key={event.id}
+                            className="event-card"
+                        >
 
-                            <h3 className="event-title">
-                                {event.title}
-                            </h3>
-
-                            <span className="event-sport">
+                            {/* SPORT */}
+                            <div className="event-sport">
                                 {getSportName(event)}
-                            </span>
+                            </div>
 
+                            {/* TITLE */}
+                            <h2 className="event-title">
+                                {event.title}
+                            </h2>
+
+                            {/* DESCRIPTION */}
                             <p className="event-desc">
                                 {event.description}
                             </p>
 
+                            {/* LOCATION */}
                             <div className="event-meta">
                                 📍 {event.location_name}
                             </div>
 
+                            {/* DATE */}
                             <div className="event-meta">
-                                🕒{" "}
-                                {new Date(event.start_time).toLocaleString()}
+                                📅{" "}
+                                {new Date(
+                                    event.event_date
+                                ).toLocaleDateString()}
                             </div>
 
+                            {/* TIME */}
                             <div className="event-meta">
-                                👥 Max {event.max_players}
+                                🕒 {event.start_time} →{" "}
+                                {event.end_time}
                             </div>
 
+                            {/* PLAYERS */}
+                            <div className="event-meta">
+                                👥 Max Players:{" "}
+                                {event.max_players}
+                            </div>
+
+                            {/* BUTTON */}
                             {isJoined ? (
                                 <button
                                     className="joined-button"
@@ -180,14 +267,18 @@ export default function Dashboard() {
                             ) : (
                                 <button
                                     className="join-button"
-                                    onClick={() => joinEvent(event.id)}
+                                    onClick={() =>
+                                        joinEvent(event.id)
+                                    }
                                 >
                                     Join Event
                                 </button>
                             )}
+
                         </div>
                     );
                 })}
+
             </div>
         </div>
     );

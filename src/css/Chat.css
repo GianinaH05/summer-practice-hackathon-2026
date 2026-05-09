@@ -70,3 +70,170 @@
     border-radius: 8px;
     cursor: pointer;
 }
+.message {
+    padding: 10px;
+    margin-bottom: 10px;
+
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.message-user {
+    font-weight: 600;
+    color: #0a3d66;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #666;
+}
+
+.message-text {
+    font-size: 14px;
+    color: #222;
+}
+.messages {
+    flex: 1;
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    padding: 20px;
+}
+
+/* WRAPPER */
+.message-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.mine-wrapper {
+    justify-content: flex-end;
+}
+
+.other-wrapper {
+    justify-content: flex-start;
+}
+
+/* CARD */
+.message-card {
+    max-width: 70%;
+
+    padding: 12px 14px;
+    border-radius: 18px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    box-shadow:
+            0 4px 12px rgba(0,0,0,0.08),
+            inset 0 1px rgba(255,255,255,0.3);
+
+    animation: fadeIn 0.2s ease;
+}
+
+/* MY MESSAGE */
+.mine-card {
+    background: linear-gradient(
+            135deg,
+            #0aa2ff,
+            #0066ff
+    );
+
+    color: white;
+
+    border-bottom-right-radius: 6px;
+}
+
+/* OTHER MESSAGE */
+.other-card {
+    background: rgba(255,255,255,0.8);
+
+    color: #0a3d66;
+
+    border: 1px solid rgba(0,120,255,0.08);
+
+    border-bottom-left-radius: 6px;
+}
+
+/* HEADER */
+.message-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* USER */
+.message-user-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.message-avatar {
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    background: rgba(255,255,255,0.2);
+
+    color: inherit;
+}
+
+.message-user {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* TIME */
+.message-time {
+    font-size: 11px;
+    opacity: 0.75;
+}
+
+/* TEXT */
+.message-text {
+    font-size: 15px;
+    line-height: 1.5;
+
+    word-break: break-word;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
